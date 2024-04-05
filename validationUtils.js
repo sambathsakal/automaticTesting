@@ -1,6 +1,6 @@
 class ValidationUtils {
-
-  static isValidString(value) {
+  
+  static isNonEmptyString(value) {
     return typeof value === 'string' && value.trim().length > 0;
   }
 
@@ -14,6 +14,22 @@ class ValidationUtils {
 
   static isValidEmail(email) {
     return /\S+@\S+\.\S+/.test(email);
+  }
+
+  static isValidRequestData(requestData, fields) {
+    let failedField = null;
+    const result = Object.entries(fields).every(([field, validationFn]) => {
+      if (!validationFn(requestData[field])) {
+        failedField = field;
+        return false;
+      }
+      return true;
+    });
+
+    return {
+      valid: result,
+      message: result ? 'Validation successful' : `Validation failed for field '${failedField}' with value '${requestData[failedField]}'`
+    };
   }
 }
 
