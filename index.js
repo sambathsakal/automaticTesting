@@ -1,5 +1,6 @@
 const axios           = require('axios');
 const ValidationUtils = require('./validationUtils');
+const ObjectUtils     = require('./objectUtils');
 
 const uri = "https://13761a59-9fe3-4b15-b383-ee30a91b3272-00-2zrrvx6x8cdo1.kirk.replit.dev";
 
@@ -13,7 +14,7 @@ const uri = "https://13761a59-9fe3-4b15-b383-ee30a91b3272-00-2zrrvx6x8cdo1.kirk.
 // axios.post(`${uri}/api/product`, request)
 //   .then(response => {
 //     console.log('Test Case 1 - POST /api/tasks');
-//     console.log('Status:', response.status);
+//     console.log('Status:', by response.status);
 //     console.log('Response:', response.data);
 //   }).catch(error => {
 //     console.error('Test Case 2 failed:', error.message);
@@ -35,10 +36,13 @@ axios.get(`${uri}/api/tasks`)
     if( !response.data.length > 0 ) return;
 
     response.data.forEach((data) => {
+      // TODO: show specify valid fields message
       const isValid = ValidationUtils.isValidRequestData(data, requiredFieldsSchema);
-      console.log('Test Case 1.3 - json in data:', data, isValid);
+      console.log('Test Case 1.3 - json in data:', ObjectUtils.limitedFields(data,1), isValid);
     });
     
   }).catch(error => {
     console.log('Test Case 1 failed:', error.message);
   });
+
+// TODO: add test case for more api
