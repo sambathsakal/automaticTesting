@@ -1,6 +1,7 @@
 const axios           = require('axios');
 const ValidationUtils = require('./validationUtils');
-const ObjectUtils     = require('./objectUtils');
+// const ObjectUtils     = require('./objectUtils');
+const assert          = require('assert');
 
 const uri = "https://13761a59-9fe3-4b15-b383-ee30a91b3272-00-2zrrvx6x8cdo1.kirk.replit.dev";
 
@@ -20,26 +21,54 @@ const uri = "https://13761a59-9fe3-4b15-b383-ee30a91b3272-00-2zrrvx6x8cdo1.kirk.
 //     console.error('Test Case 2 failed:', error.message);
 //   });
 
+const requiredFieldsSchema = { 
+  id: ValidationUtils.isValidNumber,
+  title: ValidationUtils.isNonEmptyString
+};
+
 axios.get(`${uri}/api/tasks`)
   .then(response => {
-    console.log('Test Case 1 - POST /api/tasks status:', response.status );
-    
-    console.log('Test Case 1.1 - data is array:', Array.isArray(response.data) );
-    if( !Array.isArray(response.data) ) return;
-    
-    console.log('Test Case 1.2 - data is not empty:', response.data.length > 0 );
-    if( !response.data.length > 0 ) return;
+    assert.equal(response.status, 200, `Task 1: Unexpected status code ${response.status}`);
+    assert.equal(Array.isArray(response.data), true, 'Task 1.1: data is not array');
+    assert.equal(response.data.length > 0, true, 'Task 1.2: data is empty');
 
-    const requiredFieldsSchema = { 
-      id: ValidationUtils.isValidNumber,
-      title: ValidationUtils.isNonEmptyString
-    };
     response.data.forEach((data) => {
       const validation = ValidationUtils.isValidRequestData(data, requiredFieldsSchema);
-      console.log('Test Case 1.3 - json in data:', ObjectUtils.limitedFields(data,2), validation.valid, validation.valid?'':validation.message);
+      
+      assert.equal(
+        validation.valid, 
+        true, 
+        `Task 1.3: invalid json ${validation.message}`
+      );
     });
-  }).catch(error => {
-    console.log('Test Case 1 failed:', error.message);
+  }).catch(error => console.log(error.message));
+
+return;
+axios.post(`${uri}/api/tasks`, {})
+.then(response => {
+  console.log('Test Case 2 failed:', response.status, response.data );
+})
+.catch(error => {
+  console.log('Test Case 2 - create (Missing Title) /api/tasks status:', error.response.status );
+});
+
+axios.post(`${uri}/api/tasks`, { title: 12345 })
+.then(response => {
+  console.log('Test Case 2.1 failed:', response.status );
+})
+.catch(error => {
+  console.log('Test Case 2.1 - create (Invalid data type) /api/tasks status:', error.response.status);
+});
+
+axios.post(`${uri}/api/tasks`, {
+    title: `Task ${Math.floor(Math.random() * 1000)}`
+  })
+  .then(response => {
+    console.log('Test Case 2.9 - create(Valid Data) /api/tasks status:', response.status );
+  })
+  .catch(error => {
+    console.log('Test Case 2.9 failed:', error.response.status);
   });
+
 
 // TODO: add test case for more api
