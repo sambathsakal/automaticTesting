@@ -10,48 +10,78 @@ const requiredFieldsSchema = {
   title: ValidationUtils.isNonEmptyString
 };
 
-// listing
-axios.get(`${uri}/api/tasks`)
-  .then(response => {
-    assert.equal(response.status, 200, `Task 1: Unexpected status code ${response.status}`);
-    assert.ok(Array.isArray(response.data), 'Task 1.1: data is not array');
-    assert.ok(response.data.length > 0, 'Task 1.2: data is empty');
+axios.get(`${uri}/api/task/listing`)
+.then(response => {
+  assert.equal(response.status, 200, `Task 1: Unexpected status code ${response.status}`);
+  assert.ok(Array.isArray(response.data), 'Task 1.1: data is not array');
+  assert.ok(response.data.length > 0, 'Task 1.2: data is empty');
 
-    response.data.forEach((data) => {
-      const validation = ValidationUtils.isValidRequestData(data, requiredFieldsSchema);
-      
-      assert.ok(
-        validation.valid, 
-        `Task 1.3: invalid json ${validation.message}`
-      );
-    });
-  }).catch(error => console.log(error.message));
+  response.data.forEach((data) => {
+    const validation = ValidationUtils.isValidRequestData(data, requiredFieldsSchema);
 
-// TODO: detail
+    console.log(data);
+    
+    assert.ok(
+      validation.valid, 
+      `Task 1.3: invalid json ${validation.message}`
+    );
+  });
+}).catch(error => console.log(error.message));
 
-// create
-axios.post(`${uri}/api/tasks`, {})
-  .catch(error => {
-      assert.equal(error.response.status, 400, `Task 2: Empty body - Unexpected status code ${error.response.status}`);
-  })
-  .catch(error => console.log(error.message));
+const taskIdSelectedDefault = 5;
+axios.get(`${uri}/api/task/detail/${taskIdSelectedDefault}`)
+.then(response => {
+  assert.equal(response.status, 200, `Task 2: Unexpected status code ${response.status}`);
 
+  const validation = ValidationUtils.isValidRequestData(response.data, requiredFieldsSchema);
+  
+  assert.ok(
+    validation.valid, 
+    `Task 2.1: invalid json ${validation.message}`
+  );
+}).catch(error => {
+  if( error.response.status === 404 ){
+    console.log(`Task 2.2: Task ${taskIdSelectedDefault} is not found`);
+  } else {
+    console.log(error.message);
+  }
+});
 
-axios.post(`${uri}/api/tasks`, { title: 12345 })
-  .catch(error => {
-    assert.equal(error.response.status, 400, `Task 2.1: Invalid body - Unexpected status code ${error.response.status}`);
-  })
-  .catch(error => console.log(error.message));
+axios.post(`${uri}/api/task/create`, {})
+.then(response => { throw new Error(response.status) } )
+.catch(error => {
+    const errorMessage = `Task 3: Empty body - Unexpected status code `;
+  
+    if( !error.response ) {
+      console.log(`${errorMessage} ${error}`);
+      return;
+    }
+  
+    assert.equal(error.response.status, 400, `${errorMessage} ${error.response.status}` );
+})
+.catch(error => console.log(error.message));
+
+axios.post(`${uri}/api/task/create`, { title: 12345 })
+.then(response => { throw new Error(response.status) } )
+.catch(error => {
+  const errorMessage = `Task 3.1: Invalid body - Unexpected status code `;
+  
+  if( !error.response ) {
+    console.log(`${errorMessage} ${error}`);
+    return;
+  }
+  
+  assert.equal(error.response.status, 400, `${errorMessage} ${error.response.status}` );
+})
+.catch(error => console.log(error.message));
 
 
 const taskRandomName = `Task ${Math.floor(Math.random() * 1000)}`;
-axios.post(`${uri}/api/tasks`, {
-    title: taskRandomName
-  })
-  .then(response => {
-    assert.equal(response.status, 200, `Task 2.9: fail to create task ${taskRandomName}`);
-  })
-  .catch(error => console.log(error.message));
+axios.post(`${uri}/api/task/create`, { title: taskRandomName })
+.then(response => {
+  assert.equal(response.status, 200, `Task 3.9: fail to create task ${taskRandomName}`);
+})
+.catch(error => console.log(error.message));
 
 return;
 
