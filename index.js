@@ -10,6 +10,8 @@ const requiredFieldsSchema = {
   title: ValidationUtils.isNonEmptyString
 };
 
+// TODO: builder config to seting & short all testcase with message builder
+
 axios.get(`${uri}/api/task/listing`)
 .then(response => {
   assert.equal(response.status, 200, `Task 1: Unexpected status code ${response.status}`);
@@ -28,7 +30,7 @@ axios.get(`${uri}/api/task/listing`)
   });
 }).catch(error => console.log(error.message));
 
-const taskIdSelectedDefault = 5;
+const taskIdSelectedDefault = 3;
 axios.get(`${uri}/api/task/detail/${taskIdSelectedDefault}`)
 .then(response => {
   assert.equal(response.status, 200, `Task 2: Unexpected status code ${response.status}`);
@@ -83,6 +85,59 @@ axios.post(`${uri}/api/task/create`, { title: taskRandomName })
 })
 .catch(error => console.log(error.message));
 
-return;
+axios.post(`${uri}/api/task/update/-1`)
+.then(response => { throw new Error(response.status) } )
+.catch(error => {
+  const errorMessage = `Task 4:TaskId -1 is not found `;
+  
+  if( !error.response ) {
+    console.log(`${errorMessage} ${error}`);
+    return;
+  }
 
-// TODO: add test case for more api
+  assert.equal(error.response.status, 404, `${errorMessage} ${error.response.status}` );
+  })
+  .catch(error => console.log(error.message));
+
+
+axios.post(`${uri}/api/task/update/${taskIdSelectedDefault}`, {})
+.then(response => { throw new Error(response.status) } )
+.catch(error => {
+  const errorMessage = `Task 4.1: Invalid body - Unexpected status code` ;
+  
+  if( !error.response ) {
+    console.log(`${errorMessage} ${error}`);
+    return;
+  }
+  assert.equal(error.response.status, 400, `${errorMessage} ${error.response.status}` );
+  })
+  .catch(error => console.log(error.message));
+
+
+axios.post(`${uri}/api/task/update/${taskIdSelectedDefault}`, { title: 'Task updated!'})
+.then(response => {
+  assert.equal(response.status, 200, `Task 4.9: fail to update task 3`);
+})
+.catch(error => console.log(error.message));
+
+
+axios.get(`${uri}/api/task/delete/-1`)
+.then(response => { throw new Error(response.status) } )
+.catch(error => {
+  const errorMessage = `Task 5:TaskId -1 is not found `;
+  
+  if( !error.response ) {
+    console.log(`${errorMessage} ${error}`);
+    return;
+  }
+
+  assert.equal(error.response.status, 404, `${errorMessage} ${error.response.status}` );
+  })
+  .catch(error => console.log(error.message));
+
+
+axios.get(`${uri}/api/task/delete/4`)
+.then(response => {
+  assert.equal(response.status, 200, `Task 5.9: fail to update task 3`);
+})
+.catch(error => console.log(error.message));
