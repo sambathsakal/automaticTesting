@@ -48,8 +48,6 @@ class AssertUtils {
 
    static _isValidSchema(data){
     const validation = ValidationUtils.isValidRequestData(data, this.schema);
-
-    console.log(data);
      
     assert.ok(
       validation.valid, 
